@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    window.imports = {}
+  </script>
+  <script src='javascripts/U_Functions.js'></script>
+</head>
+<style>
+  html {
+    height: 100%;
+  }
+  body {
+    min-height: 100%;
+  }
+</style>
+<body>
+  <div id='main'></div>
+  <textarea id = 'mainText' style='width: 100%; height: 550px;'></textarea>
+    <script>
+      'use strict'
+      //template copying and custom elements definition
+      {
+        window.onload = function() {
+          document.querySelectorAll('link[rel="import"]').forEach(function(ele) {
+            if (ele.import.querySelector('template')) document.body.append(ele.import.querySelector('template'))
+          })
+          //Custom Elements
+          class SomeCustomElement extends HTMLElement
+          {
+            constructor()
+            {
+              super()
+            }
+            connectedCallback() {
+              this.shadow = this.attachShadow({mode: 'open'})
+              let name = this.getAttribute('template')
+              this.shadow.appendChild(document.importNode(document.querySelector('#' + name + '_Template').content,1))
+            }
+          }
+          customElements.define( 'x-box', SomeCustomElement )
+        }
+      }
+    </script>
+<script>
+  'use strict'
+  {
+    console.log("type help() in console for help")
+    window.help = function() {
+      console.log("Available commands:\n\n" +
+        "print(obj) : prints object to textarea\n\n" +
+        "printJSON(obj) : prints json object \n\n" +
+        "read() : returns object from textarea.  use like this: let foo = read() \n\n" +
+        "readJSON() : returns json object from textarea \n\n" +
+        "There's also a version of this that involves backend grabbing/saving files but I figured " +
+        "that a simple version with no dependencies would be better to start of with.  You can copy/paste into" +
+        "editor of your choice then back to textarea.  If y'all desire backend version shout it out."
+        )
+    }
+    window.openFile = function(url) {
+      U.post('/grabObject', url, function(response) {
+        console.log('file is loaded as variable "file" (no ")')
+        window.file = eval('(' + response + ')')
+      })
+    }
+    window.display = function(obj) {
+
+    }
+    window.newProject(name){
+      let proj = {
+        "title": name,
+        "characters":{
+          "main": {},
+          "supporting": {},
+          "minor": {}
+        },
+
+      }
+    }
+    window.save = function(url) {
+      U.post('/updateObject', url + '^' + document.querySelector('#mainText').value, function(response) {
+        console.log('done')
+      })
+    }
+    window.print =  function( obj ) {
+
+    var str = '';
+    var collectArray = function(obj, level, name) {
+      let innerString = '['
+      for (let p = 0; p < obj.length; p++) {
+        if (typeof(obj[p]) != 'object') {
+          if (typeof(obj[p]) == 'string') {
+            innerString += '"' + obj[p] + '"'
+          } else {
+            innerString += obj[p]
+          }
+        } else {
+          if (Array.isArray(obj[p]) == false) {
+            innerString +=  collectObject(obj[p], level + 2)
+          } else {
+            innerString += collectArray(obj[p], level + 2)
+          }
+        }
+        if (p < obj.length -1) innerString += ','
+      }
+      innerString += ']'
+      return innerString;
+    }
+    var collectObject = function(obj, level, name) {
+      let spaces = ''
+      for (let i = level; i > 0; i--) {
+        spaces += ' '
+      }
+      var levelStr = '{\n';
+      let objKeys = Object.keys(obj).forEach(function(p, indexVal, arr) {
+        levelStr += spaces + '  "' + p + '" : '
+        if (typeof(obj[p]) != 'object') {
+          if (typeof(obj[p]) == 'string') {
+            levelStr += '"' + obj[p] + '"'
+          } else {
+            levelStr += obj[p]
+          }
+        } else {
+          if (Array.isArray(obj[p]) == false) {
+            levelStr +=  collectObject(obj[p], level + 2)
+          } else {
+            levelStr += collectArray(obj[p], level + 2)
+          }
+        }
+        if (indexVal != arr.length -1) levelStr += ','
+        levelStr += '\n'
+      })
+      levelStr += spaces + '}'
+      return levelStr;
+    }
+    if (Array.isArray(obj)) str += collectArray(obj, 0)
+    else str += collectObject(obj, 0)
+    document.querySelector('#mainText').value =  str;
+  };
+    window.read = function() {
+      return eval('(' + document.querySelector('#mainText').value + ')')
+    }
+  }
+</script>
+</body>
+</html>
