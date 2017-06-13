@@ -48,13 +48,15 @@
     console.log("type help() in console for help")
     window.help = function() {
       console.log("Available commands:\n\n" +
-        "print(obj) : prints object to textarea\n\n" +
-        "printJSON(obj) : prints json object \n\n" +
+        "print(someObject) : prints object to textarea\n\n" +
         "read() : returns object from textarea.  use like this: let foo = read() \n\n" +
-        "readJSON() : returns json object from textarea \n\n" +
-        "There's also a version of this that involves backend grabbing/saving files but I figured " +
-        "that a simple version with no dependencies would be better to start of with.  You can copy/paste into" +
-        "editor of your choice then back to textarea.  If y'all desire backend version shout it out."
+        `newProject("name") : creates a new project object
+        
+save('pathname') : saves textarea to file pathname
+
+openFile('pathname') : opens file and loads to variable 'file'
+
+list() : lists files in objects folder`
         )
     }
     window.openFile = function(url) {
@@ -63,19 +65,56 @@
         window.file = eval('(' + response + ')')
       })
     }
+    window.list = function() {
+      U.post('/list', '', function(response) {
+        console.log(response)
+      })
+    }
     window.display = function(obj) {
 
     }
-    window.newProject(name){
+    window.newProject = function(name){
       let proj = {
         "title": name,
+        "premise": ``,
+        "genre(s)": ``,
+        "setting(s)": {"Medieval Steampunk England": `as name suggests`},
         "characters":{
-          "main": {},
+          "main": {
+            "protagonist named Bob": {
+              "personal timeline": [],
+              "blurb": ``,
+              "bio": {
+                "appearance": ``,
+                "image":``,
+                "character": ``,
+                "goals": ``
+              }
+            }
+          },
           "supporting": {},
           "minor": {}
         },
+        "locations":{},
+        "thread timelines": {},
+        "narrative timeline": [
+          {
+            "Prologue": {
+              "blurb": ``,
+              "locations": [],
+              "characters": [],
+              "atmosphere": ``,
+              "list main points": [],
+              "deeper runthrough": {
+
+              }
+            }
+          }
+        ],
 
       }
+      window.project = proj
+      console.log("variable 'project' is set up, type print(project) to see it.")
     }
     window.save = function(url) {
       U.post('/updateObject', url + '^' + document.querySelector('#mainText').value, function(response) {
@@ -83,14 +122,17 @@
       })
     }
     window.print =  function( obj ) {
-
+      if (typeof(obj) != 'object') {
+        document.querySelector('#mainText').value = obj
+        return 0;
+      }
     var str = '';
     var collectArray = function(obj, level, name) {
       let innerString = '['
       for (let p = 0; p < obj.length; p++) {
         if (typeof(obj[p]) != 'object') {
           if (typeof(obj[p]) == 'string') {
-            innerString += '"' + obj[p] + '"'
+            innerString += '`' + obj[p] + '`'
           } else {
             innerString += obj[p]
           }
@@ -116,7 +158,7 @@
         levelStr += spaces + '  "' + p + '" : '
         if (typeof(obj[p]) != 'object') {
           if (typeof(obj[p]) == 'string') {
-            levelStr += '"' + obj[p] + '"'
+            levelStr += '`' + obj[p] + '`'
           } else {
             levelStr += obj[p]
           }

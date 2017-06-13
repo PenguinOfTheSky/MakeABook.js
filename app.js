@@ -29,6 +29,11 @@ app.use('/users', users);
 app.post('/grabObject', function(req, res) {
   res.sendFile(path.join(__dirname,'/public/objects/' + req.body + '.js'))
 })
+app.post('/list', function(req, res) {
+  fs.readdir('public/objects', function(err, files) {
+    res.send(files.slice(1))
+  })
+})
 app.post('/updateObject', function(req, res) {
 
   try {
