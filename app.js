@@ -39,7 +39,7 @@ app.post('/updateObject', function(req, res) {
   try {
     let url = ''
     let len = 0
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 30; i++) {
       if (req.body[i] == '^') {
         url = req.body.slice(0, i)
         len = i+1
